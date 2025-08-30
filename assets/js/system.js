@@ -113,7 +113,7 @@ System.prototype.render = function (ctx, gridAU) {
     }
     ctx.stroke();
 
-    const radius = 2;
+    const radius = 3;
     for (const p of this.particles) {
         const x = p.position.components[0] * scale;
         const y = p.position.components[1] * scale;
