@@ -1,15 +1,13 @@
-const System = function (N, averageMass = 1, systemRadius = 10) {
+const System = function (N, averageMass = 1, systemRadius = 10, e2 = 1e-2) {
     // Distance: astronomical units
     // Mass: solar masses
     // Time: earth years
     this.G = 4 * Math.PI ** 2
 
-    // prevent singularities
-    this.e = 1e-4;
-
     this.N = N;
     this.averageMass = averageMass;
     this.systemRadius = systemRadius;
+    this.e2 = e2;
 
     this.particles = Array.from({ length: N }, (_, i) =>
         new Particle(
@@ -49,15 +47,18 @@ System.prototype.getEnergy = function () {
 
     let potential = 0;
     for (let i = 0; i < this.N; ++i) {
+        const pi = this.particles[i];
         for (let j = i + 1; j < this.N; ++j) {
-            const pi = this.particles[i];
             const pj = this.particles[j];
             const r = pi.position.sub(pj.position).norm();
-            potential -= this.G * pi.mass * pj.mass / (r + this.e);
+            potential -= this.G * pi.mass * pj.mass / (r + this.e2);
         }
     }
 
-    return { kinetic, potential, total: kinetic + potential };
+    return {
+        kinetic: kinetic,
+        potential: potential
+    };
 };
 
 System.prototype.getAcceleration = function (i) {
@@ -69,7 +70,7 @@ System.prototype.getAcceleration = function (i) {
         }
 
         const r = this.particles[j].position.sub(this.particles[i].position);
-        acceleration = acceleration.add(r.mul(this.G * this.particles[j].mass / (Math.pow(r.norm(), 3) + this.e)));
+        acceleration = acceleration.add(r.mul(this.G * this.particles[j].mass / Math.pow(r.normSquared() + this.e2, 1.5)));
     }
 
     return acceleration;
@@ -97,8 +98,8 @@ System.prototype.render = function (ctx, gridAU) {
     const scale = height / (2 * this.systemRadius);
 
     const gridSize = scale * gridAU;
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-    ctx.linewidth = 1;
+    ctx.strokeStyle = 'rgba(200, 240, 255, 0.3)';
+    ctx.linewidth = 0.5;
     ctx.beginPath();
     // Vertical lines
     for (let x = -halfWidth; x <= halfWidth; x += gridSize) {
@@ -112,12 +113,13 @@ System.prototype.render = function (ctx, gridAU) {
     }
     ctx.stroke();
 
+    const radius = 2;
     for (const p of this.particles) {
         const x = p.position.components[0] * scale;
         const y = p.position.components[1] * scale;
 
         ctx.beginPath();
-        ctx.arc(x, y, 3, 0, 2 * Math.PI);
+        ctx.arc(x, y, radius, 0, 2 * Math.PI);
         ctx.fillStyle = 'white';
         ctx.fill();
     }

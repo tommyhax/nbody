@@ -9,11 +9,11 @@ const Particle = function (id, mass, position, velocity, acceleration) {
 Particle.prototype.update = function (dt, getAcceleration) {
     // Velocity Verlet Algorithm
 
-    const dtHalf = dt / 2;
+    x1 = this.position.add(this.velocity.mul(dt)).add(this.acceleration.mul(dt * dt * 0.5));
+    a1 = getAcceleration(this.id);
+    v1 = this.velocity.add(this.acceleration.add(a1).mul(dt * 0.5));
 
-    const vHalf = this.velocity.add(this.acceleration.mul(dtHalf));
-
-    this.position = this.position.add(vHalf.mul(dt));
-    this.acceleration = getAcceleration(this.id);
-    this.velocity = vHalf.add(this.acceleration.mul(dtHalf));
+    this.position = x1;
+    this.acceleration = a1;
+    this.velocity = v1;
 }

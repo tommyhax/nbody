@@ -4,11 +4,11 @@
     <p>
       <div>
         <table>
-          <tr><td>Grid size:</td><td><span id="grid"></span> AU</td></tr>
-          <tr><td>Elapsed time:</td><td><span id="time"></span> years</td></tr>
-          <tr><td>Kinetic energy:</td><td id="kinetic"></td></tr>
-          <tr><td>Potential energy:</td><td id="potential"></td></tr>
-          <tr><td>Total energy:</td><td id="total"></td></tr>
+          <tr><td><strong>Grid size</strong></td><td><span id="grid"></span> AU</td></tr>
+          <tr><td><strong>Elapsed time</strong></td><td><span id="time"></span> years</td></tr>
+          <tr><td><strong>Kinetic energy</strong></td><td id="kinetic"></td></tr>
+          <tr><td><strong>Potential energy</strong></td><td id="potential"></td></tr>
+          <tr><td><strong>Total energy</strong></td><td id="total"></td></tr>
           <tr><td><button onclick="restart()">Restart</button></td></tr>
         </table>
       </div>
@@ -19,12 +19,13 @@
     <script src="assets/js/system.js"></script>
     <script src="assets/js/vector.js"></script>
     <script>
-const N = 5;
+const N = 3;
 const averageMassSM = 1;
 const systemRadiusAU = 5;
-const gridAU = 1;
+const e2 = 1e-2;
 const dt = 0.001;
 const canvasSize = 756;
+const gridAU = 1;
 
 const canvas = document.getElementById('canvas');
 canvas.width = canvasSize;
@@ -35,43 +36,41 @@ ctx.fillStyle = 'black';
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 ctx.translate(canvas.width / 2, canvas.height / 2);
 
+let system, time, animationFrame;
+
+function initSystem() {
+    system = new System(N, averageMassSM, systemRadiusAU, e2);
+    time = 0;
+}
+
+function animate() {
+    system.update(dt);
+    system.render(ctx, gridAU);
+    time += dt;
+    updateInfo();
+    animationFrame = requestAnimationFrame(animate);
+}
+
+function restart() {
+    if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+    }
+
+    start();
+}
+
 function updateInfo () {
     document.getElementById('grid').innerHTML = gridAU;
     document.getElementById('time').innerHTML = time.toFixed(2);
     var energy = system.getEnergy();
     document.getElementById('kinetic').innerHTML = energy.kinetic.toFixed(2);
     document.getElementById('potential').innerHTML = energy.potential.toFixed(2);
-    document.getElementById('total').innerHTML = energy.total.toFixed(2);
-}
-
-
-let system, time;
-let animationId;
-
-function initSystem() {
-  system = new System(N, averageMassSM, systemRadiusAU, gridAU);
-  time = 0;
-}
-
-function animate() {
-  system.update(dt);
-  system.render(ctx, gridAU);
-  time += dt;
-  updateInfo();
-  animationId = requestAnimationFrame(animate);
-}
-
-function restart() {
-  if (animationId) {
-    cancelAnimationFrame(animationId);
-  }
-
-  start();
+    document.getElementById('total').innerHTML = (energy.kinetic + energy.potential).toFixed(2);
 }
 
 function start() {
-initSystem();
-animate();
+    initSystem();
+    animate();
 }
 
 start();
