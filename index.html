@@ -9,6 +9,7 @@
           <tr><td>Kinetic energy:</td><td id="kinetic"></td></tr>
           <tr><td>Potential energy:</td><td id="potential"></td></tr>
           <tr><td>Total energy:</td><td id="total"></td></tr>
+          <tr><td><button onclick="restart()">Restart</button></td></tr>
         </table>
       </div>
     </p>
@@ -18,7 +19,7 @@
     <script src="assets/js/system.js"></script>
     <script src="assets/js/vector.js"></script>
     <script>
-const N = 3;
+const N = 5;
 const averageMassSM = 1;
 const systemRadiusAU = 5;
 const gridAU = 1;
@@ -34,8 +35,6 @@ ctx.fillStyle = 'black';
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 ctx.translate(canvas.width / 2, canvas.height / 2);
 
-const system = new System(N, averageMassSM, systemRadiusAU);
-
 function updateInfo () {
     document.getElementById('grid').innerHTML = gridAU;
     document.getElementById('time').innerHTML = time.toFixed(2);
@@ -45,16 +44,37 @@ function updateInfo () {
     document.getElementById('total').innerHTML = energy.total.toFixed(2);
 }
 
-var time = 0;
-function animate() {
-    system.update(dt);
-    system.render(ctx, gridAU);
-    requestAnimationFrame(animate);
-    time += dt;
-    updateInfo();
+
+let system, time;
+let animationId;
+
+function initSystem() {
+  system = new System(N, averageMassSM, systemRadiusAU, gridAU);
+  time = 0;
 }
 
+function animate() {
+  system.update(dt);
+  system.render(ctx, gridAU);
+  time += dt;
+  updateInfo();
+  animationId = requestAnimationFrame(animate);
+}
+
+function restart() {
+  if (animationId) {
+    cancelAnimationFrame(animationId);
+  }
+
+  start();
+}
+
+function start() {
+initSystem();
 animate();
+}
+
+start();
     </script>
   </body>
 </html>
